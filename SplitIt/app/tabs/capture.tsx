@@ -1,30 +1,74 @@
 import {
-  CameraMode,
-  CameraType,
   CameraView,
   useCameraPermissions,
 } from "expo-camera";
 import { useRef, useState, useEffect } from "react";
 import { Button, Pressable, StyleSheet, Text, View } from "react-native";
-import { Image } from "expo-image";
-import AntDesign from "@expo/vector-icons/AntDesign";
-import Feather from "@expo/vector-icons/Feather";
-import FontAwesome6 from "@expo/vector-icons/FontAwesome6";
+import axios from 'axios';
+import * as FileSystem from 'expo-file-system';
+
+const BASE_URL = 'http://192.168.1.144:3000';
+
+// Send receipt to backend
+async function sendImageToBackend(imageURI: string): Promise<string> {
+  try {
+    // Check if the image exists
+    const imageFileInfo = await FileSystem.getInfoAsync(imageURI);
+    if (!imageFileInfo.exists) {
+      throw new Error("This file does not exist on this device");
+    }
+    
+    const formData = new FormData();
+    formData.append('image', {
+      imageURI,
+      name: 'photo.jpg',
+      type: 'image/jpeg',
+    } as any);
+
+    await axios.post(`${BASE_URL}/upload`, formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    });
+
+    // Post the image to the backend
+    const response = await axios.post(`${BASE_URL}/upload`, imageFileInfo, {
+      headers: {
+        'Content-Type': 'multipart/form-data' 
+      }
+    });
+
+    // Return the data
+    console.log(response.data);
+    return response.data;
+
+    // Handle potential errors
+  } catch (error) {
+    console.log(error);
+    return "Error contacting backend";
+  } finally {
+    console.log("This is the finally statement");
+  }
+}
 
 export default function App() {
   const [permission, requestPermission] = useCameraPermissions();
   const ref = useRef<CameraView>(null);
   const [uri, setUri] = useState<string | null>(null);
-  const [mode, setMode] = useState<CameraMode>("picture");
-  const [facing, setFacing] = useState<CameraType>("back");
-  const [recording, setRecording] = useState(false);
-
+  const [message, setMessage] = useState<string | null>(null);
+  
   useEffect(() => {
     if (uri) {
-      console.log(uri);
+      // console.log(uri);
     }
   }, [uri]);
   
+  useEffect(() => {
+    if (message) {
+      // console.log(message)
+    }
+  })
+
   if (!permission) {
     return null;
   }
@@ -43,40 +87,10 @@ export default function App() {
   const takePicture = async () => {
     const photo = await ref.current?.takePictureAsync();
     if (photo?.uri) {
-      setUri(photo?.uri);
+      setUri(photo.uri);
+      const response = await sendImageToBackend(photo.uri);
+      setMessage(response);
     }
-  };
-
-  const recordVideo = async () => {
-    if (recording) {
-      setRecording(false);
-      ref.current?.stopRecording();
-      return;
-    }
-    setRecording(true);
-    const video = await ref.current?.recordAsync();
-    console.log({ video });
-  };
-
-  const toggleMode = () => {
-    setMode((prev) => (prev === "picture" ? "video" : "picture"));
-  };
-
-  const toggleFacing = () => {
-    setFacing((prev) => (prev === "back" ? "front" : "back"));
-  };
-
-  const renderPicture = () => {
-    return (
-      <View>
-        <Image
-          source={{ uri }}
-          contentFit="contain"
-          style={{ width: 300, aspectRatio: 1 }}
-        />
-        <Button onPress={() => setUri(null)} title="Take another picture" />
-      </View>
-    );
   };
 
   const renderCamera = () => {
@@ -84,20 +98,13 @@ export default function App() {
       <CameraView
         style={styles.camera}
         ref={ref}
-        mode={mode}
-        facing={facing}
+        mode={"picture"}
+        facing={"back"}
         mute={false}
         responsiveOrientationWhenOrientationLocked
       >
         <View style={styles.shutterContainer}>
-          <Pressable onPress={toggleMode}>
-            {mode === "picture" ? (
-              <AntDesign name="picture" size={32} color="white" />
-            ) : (
-              <Feather name="video" size={32} color="white" />
-            )}
-          </Pressable>
-          <Pressable onPress={mode === "picture" ? takePicture : recordVideo}>
+          <Pressable onPress={takePicture}>
             {({ pressed }) => (
               <View
                 style={[
@@ -107,19 +114,8 @@ export default function App() {
                   },
                 ]}
               >
-                <View
-                  style={[
-                    styles.shutterBtnInner,
-                    {
-                      backgroundColor: mode === "picture" ? "white" : "red",
-                    },
-                  ]}
-                />
               </View>
             )}
-          </Pressable>
-          <Pressable onPress={toggleFacing}>
-            <FontAwesome6 name="rotate-left" size={32} color="white" />
           </Pressable>
         </View>
       </CameraView>
@@ -128,7 +124,7 @@ export default function App() {
 
   return (
     <View style={styles.container}>
-      {uri ? renderPicture() : renderCamera()}
+      {renderCamera()}
     </View>
   );
 }
@@ -147,12 +143,11 @@ const styles = StyleSheet.create({
   shutterContainer: {
     position: "absolute",
     bottom: 44,
-    left: 0,
+    left: 160,
     width: "100%",
     alignItems: "center",
     flexDirection: "row",
     justifyContent: "space-between",
-    paddingHorizontal: 30,
   },
   shutterBtn: {
     backgroundColor: "transparent",
@@ -163,10 +158,5 @@ const styles = StyleSheet.create({
     borderRadius: 45,
     alignItems: "center",
     justifyContent: "center",
-  },
-  shutterBtnInner: {
-    width: 70,
-    height: 70,
-    borderRadius: 50,
   },
 });
