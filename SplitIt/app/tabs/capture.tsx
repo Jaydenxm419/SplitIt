@@ -14,6 +14,7 @@ async function sendImageToBackend(imageURI: string): Promise<string> {
   try {
     // Check if the image exists
     const imageFileInfo = await FileSystem.getInfoAsync(imageURI);
+    console.log(imageFileInfo);
     if (!imageFileInfo.exists) {
       throw new Error("This file does not exist on this device");
     }
@@ -25,19 +26,12 @@ async function sendImageToBackend(imageURI: string): Promise<string> {
       type: 'image/jpeg',
     } as any);
 
-    await axios.post(`${BASE_URL}/upload`, formData, {
+    const response = await axios.post(`${BASE_URL}/upload`, formData, {
       headers: {
         'Content-Type': 'multipart/form-data',
       },
     });
-
-    // Post the image to the backend
-    const response = await axios.post(`${BASE_URL}/upload`, imageFileInfo, {
-      headers: {
-        'Content-Type': 'multipart/form-data' 
-      }
-    });
-
+    
     // Return the data
     console.log(response.data);
     return response.data;

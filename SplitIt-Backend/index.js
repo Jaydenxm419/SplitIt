@@ -20,7 +20,7 @@ const upload = multer({ dest: 'uploads/' });
 
 app.post('/upload', upload.single('image'), (req, res) => {
   console.log(req.file); // should now log file info
-  res.send({ imageUri: req.file.path });
+  res.send({ imageUri: req.file });
 });
 
 
