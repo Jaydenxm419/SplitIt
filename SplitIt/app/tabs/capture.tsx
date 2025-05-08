@@ -6,7 +6,9 @@ import { useRef, useState, useEffect } from "react";
 import { Button, Pressable, StyleSheet, Text, View } from "react-native";
 import axios from 'axios';
 import * as FileSystem from 'expo-file-system';
+import { Image } from 'react-native';
 
+// TODO: Create IP for backend
 const BASE_URL = 'http://172.20.10.4:3000';
 
 // Send receipt to backend
@@ -35,8 +37,8 @@ async function sendImageToBackend(imageURI: string): Promise<string> {
     });
 
     // Return the data
-    console.log(response.data);
-    return response.data;
+    console.log(response.data.imageUri.path);
+    return response.data.imageUri.path;
 
     // Handle potential errors
   } catch (error) {
@@ -85,7 +87,7 @@ export default function App() {
     if (photo?.uri) {
       setUri(photo.uri);
       const response = await sendImageToBackend(photo.uri);
-      setMessage(response);
+      setMessage(response)
     }
   };
 
@@ -118,9 +120,16 @@ export default function App() {
     );
   };
 
+  console.log(message);
   return (
     <View style={styles.container}>
       {renderCamera()}
+      {message && (
+      <Image
+        source={{ uri: `${BASE_URL}/${message}` }}
+        style={styles.imagePreview}
+      />
+    )}
     </View>
   );
 }
@@ -155,4 +164,10 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
+  imagePreview: {
+    width: 300,
+    height: 300,
+    marginTop: 20,
+    borderRadius: 8,
+  }
 });
