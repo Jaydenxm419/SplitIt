@@ -7,31 +7,33 @@ import { Button, Pressable, StyleSheet, Text, View } from "react-native";
 import axios from 'axios';
 import * as FileSystem from 'expo-file-system';
 
-const BASE_URL = 'http://192.168.1.144:3000';
+const BASE_URL = 'http://172.20.10.4:3000';
 
 // Send receipt to backend
 async function sendImageToBackend(imageURI: string): Promise<string> {
   try {
     // Check if the image exists
     const imageFileInfo = await FileSystem.getInfoAsync(imageURI);
-    console.log(imageFileInfo);
+    console.log(imageURI);
     if (!imageFileInfo.exists) {
       throw new Error("This file does not exist on this device");
     }
     
+    // Organize the form data
     const formData = new FormData();
     formData.append('image', {
-      imageURI,
-      name: 'photo.jpg',
+      uri: imageURI,
+      name: 'photo.jpg', // TODO: Dynamically change photo name by default or ask for user input
       type: 'image/jpeg',
     } as any);
 
+    // POST the image to the backend at the /upload route
     const response = await axios.post(`${BASE_URL}/upload`, formData, {
       headers: {
         'Content-Type': 'multipart/form-data',
       },
     });
-    
+
     // Return the data
     console.log(response.data);
     return response.data;
