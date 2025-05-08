@@ -1,22 +1,18 @@
-import {
-  CameraView,
-  useCameraPermissions,
-} from "expo-camera";
-import { useRef, useState, useEffect } from "react";
-import { Button, Pressable, StyleSheet, Text, View } from "react-native";
-import axios from 'axios';
+import { CameraView, useCameraPermissions } from "expo-camera";
 import * as FileSystem from 'expo-file-system';
+import { useRef, useState } from "react";
+import { Button, Pressable, StyleSheet, Text, View } from "react-native";
 import { Image } from 'react-native';
+import axios from 'axios';
 
 // TODO: Create IP for backend
-const BASE_URL = 'http://172.20.10.4:3000';
+const BASE_URL = 'http://192.168.1.144:3000';
 
 // Send receipt to backend
 async function sendImageToBackend(imageURI: string): Promise<string> {
   try {
     // Check if the image exists
     const imageFileInfo = await FileSystem.getInfoAsync(imageURI);
-    console.log(imageURI);
     if (!imageFileInfo.exists) {
       throw new Error("This file does not exist on this device");
     }
@@ -30,15 +26,15 @@ async function sendImageToBackend(imageURI: string): Promise<string> {
     } as any);
 
     // POST the image to the backend at the /upload route
-    const response = await axios.post(`${BASE_URL}/upload`, formData, {
+    const response = await axios.post(`${BASE_URL}/api/upload/receipt`, formData, {
       headers: {
         'Content-Type': 'multipart/form-data',
       },
     });
 
     // Return the data
-    console.log(response.data.imageUri.path);
-    return response.data.imageUri.path;
+    console.log(response.data.filename);
+    return response.data.filename;
 
     // Handle potential errors
   } catch (error) {
@@ -52,20 +48,7 @@ async function sendImageToBackend(imageURI: string): Promise<string> {
 export default function App() {
   const [permission, requestPermission] = useCameraPermissions();
   const ref = useRef<CameraView>(null);
-  const [uri, setUri] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
-  
-  useEffect(() => {
-    if (uri) {
-      // console.log(uri);
-    }
-  }, [uri]);
-  
-  useEffect(() => {
-    if (message) {
-      // console.log(message)
-    }
-  })
 
   if (!permission) {
     return null;
@@ -85,9 +68,9 @@ export default function App() {
   const takePicture = async () => {
     const photo = await ref.current?.takePictureAsync();
     if (photo?.uri) {
-      setUri(photo.uri);
       const response = await sendImageToBackend(photo.uri);
-      setMessage(response)
+      // Wait briefly to give the server time to write the file
+      setTimeout(() => setMessage(response), 300); // 300ms delay
     }
   };
 
@@ -119,16 +102,15 @@ export default function App() {
       </CameraView>
     );
   };
-
-  console.log(message);
+  console.log(`${BASE_URL}/api/image/${message}`)
+  
   return (
     <View style={styles.container}>
       {renderCamera()}
       {message && (
       <Image
-        source={{ uri: `${BASE_URL}/${message}` }}
-        style={styles.imagePreview}
-      />
+      source={{ uri: `${BASE_URL}/api/image/${message}?t=${Date.now()}` }}
+      style={styles.imagePreview}/>
     )}
     </View>
   );
