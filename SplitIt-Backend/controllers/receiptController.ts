@@ -65,12 +65,13 @@ export const postReceiptImageToAPI = (req, res) => {
 
 export const getReceiptJsonFromAPI = (req, res) => {
     const document_id = req.params.document_id; // Get the document ID from the client
+    console.log("Document ID: ", document_id)
     const URL = `https://app.docupanda.io/document/${document_id}`;
     fetch(URL, {
         method: 'GET',
         headers: {
             "accept": "application/json",
-            "X-API-Key": "demo-api-key"
+            "X-API-Key": API_KEY
         }
     })
     .then(response => response.json())
