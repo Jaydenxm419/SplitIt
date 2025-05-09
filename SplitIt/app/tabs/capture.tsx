@@ -120,16 +120,19 @@ export default function CaptureReceipt() {
 
 // Style
 const styles = StyleSheet.create({
+  // Camera container
   container: {
     flex: 1,
     backgroundColor: "#fff",
     alignItems: "center",
     justifyContent: "center",
   },
+  // Camera zoom
   camera: {
     flex: 1,
     width: "100%",
   },
+  // Shutter container
   shutterContainer: {
     position: "absolute",
     bottom: 44,
@@ -139,6 +142,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
   },
+  // Shutter button
   shutterBtn: {
     backgroundColor: "transparent",
     borderWidth: 5,
@@ -149,6 +153,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
+  // Image preview after picture
   imagePreview: {
     width: 300,
     height: 300,

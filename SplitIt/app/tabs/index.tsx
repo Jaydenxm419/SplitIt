@@ -1,6 +1,7 @@
 import { Link } from 'expo-router';
 import { View, Text, StyleSheet } from 'react-native';
 
+// Display account home view
 export default function HomeScreen() {
   return (
     <View style={styles.container}>
@@ -10,7 +11,9 @@ export default function HomeScreen() {
   );
 }
 
+// Style
 const styles = StyleSheet.create({
+  // Container for account elements
   container: {
     flex: 1,
     justifyContent: 'center',

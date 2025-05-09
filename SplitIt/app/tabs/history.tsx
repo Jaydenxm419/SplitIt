@@ -1,11 +1,12 @@
 import { Text, StyleSheet, SafeAreaView, TouchableOpacity } from 'react-native';
 import List from '@/components/list';
 
-// TODO: Bring user to add another receipt
+// TODO: Add another receipt
 function onPressLearnMore() {
     console.log("Hello")
 }
 
+// Display receipt history view
 export default function HistoryScreen() {
     return (
         <SafeAreaView style={styles.container}> 
@@ -20,6 +21,7 @@ export default function HistoryScreen() {
     )
 }
 
+// Style
 const styles = StyleSheet.create({
     // Screen
     container: {

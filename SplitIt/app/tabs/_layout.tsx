@@ -1,5 +1,5 @@
 import { Tabs } from 'expo-router';
-import { Ionicons } from '@expo/vector-icons'; // Or any other icon pack
+import { Ionicons } from '@expo/vector-icons';
 
 // Tab bar layout
 export default function TabLayout() {
