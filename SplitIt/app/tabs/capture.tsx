@@ -1,15 +1,15 @@
 import { CameraView, useCameraPermissions } from "expo-camera";
-import * as FileSystem from 'expo-file-system';
 import { useRef, useState } from "react";
 import { Button, Pressable, StyleSheet, Text, View } from "react-native";
 import { Image } from 'react-native';
+import * as FileSystem from 'expo-file-system';
 import axios from 'axios';
 
 // TODO: Create IP for backend
 const BASE_URL = 'http://192.168.1.144:3000';
 
-// Send receipt to backend
-async function sendImageToBackend(imageURI: string): Promise<string> {
+// POST receipt to backend
+async function postReceiptImage(imageURI: string): Promise<string> {
   try {
     // Check if the image exists
     const imageFileInfo = await FileSystem.getInfoAsync(imageURI);
@@ -17,7 +17,7 @@ async function sendImageToBackend(imageURI: string): Promise<string> {
       throw new Error("This file does not exist on this device");
     }
     
-    // Organize the form data
+    // Organize form data to POST
     const formData = new FormData();
     formData.append('image', {
       uri: imageURI,
@@ -25,7 +25,7 @@ async function sendImageToBackend(imageURI: string): Promise<string> {
       type: 'image/jpeg',
     } as any);
 
-    // POST the image to the backend at the /upload route
+    // POST the image to backend
     const response = await axios.post(`${BASE_URL}/receipts/upload`, formData, {
       headers: {
         'Content-Type': 'multipart/form-data',
@@ -33,27 +33,29 @@ async function sendImageToBackend(imageURI: string): Promise<string> {
     });
 
     // Return the data
-    console.log(response.data.filename);
+    console.log("Retrieving image...", response.data.filename);
     return response.data.filename;
 
-    // Handle potential errors
+    // Handle errors
   } catch (error) {
-    console.log(error);
     return "Error contacting backend";
   } finally {
     console.log("This is the finally statement");
   }
 }
 
-export default function App() {
+// Capture receipt image
+export default function CaptureReceipt() {
   const [permission, requestPermission] = useCameraPermissions();
+  const [filename, setFileName] = useState<string | null>(null);
   const ref = useRef<CameraView>(null);
-  const [message, setMessage] = useState<string | null>(null);
 
+  // Client declines permission
   if (!permission) {
     return null;
   }
 
+  // Grant permission popup
   if (!permission.granted) {
     return (
       <View style={styles.container}>
@@ -65,15 +67,16 @@ export default function App() {
     );
   }
 
+  // Camera takes picture
   const takePicture = async () => {
-    const photo = await ref.current?.takePictureAsync();
+    const photo = await ref.current?.takePictureAsync(); // capture image metadata
     if (photo?.uri) {
-      const response = await sendImageToBackend(photo.uri);
-      // Wait briefly to give the server time to write the file
-      setTimeout(() => setMessage(response), 300); // 300ms delay
+      const response = await postReceiptImage(photo.uri); // send the image backend
+      setTimeout(() => setFileName(response), 300); 
     }
   };
 
+  // Open camera view
   const renderCamera = () => {
     return (
       <CameraView
@@ -102,20 +105,20 @@ export default function App() {
       </CameraView>
     );
   };
-  console.log(`${BASE_URL}/receipts/${message}`)
   
   return (
     <View style={styles.container}>
       {renderCamera()}
-      {message && (
+      {filename && (
       <Image
-      source={{ uri: `${BASE_URL}/receipts/${message}?t=${Date.now()}` }}
+      source={{ uri: `${BASE_URL}/receipts/${filename}?t=${Date.now()}` }}
       style={styles.imagePreview}/>
     )}
     </View>
   );
 }
 
+// Style
 const styles = StyleSheet.create({
   container: {
     flex: 1,
