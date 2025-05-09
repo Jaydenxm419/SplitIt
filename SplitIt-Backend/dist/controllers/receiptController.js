@@ -1,17 +1,14 @@
 import path from 'path';
 import fs from 'fs';
-import { fileURLToPath } from 'url';
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+// Function to return the receipt data to the client
 export const getReceiptData = (req, res) => {
     const file = req.file; // Access the uploaded file
-    console.log(file, "HELLO");
-    res.json({ filename: req.file.filename }); // Only return the filename
+    res.json({ filename: file.filename }); // Return the file name
 };
+// Function to return the image of the receipt to the client
 export const getImage = (req, res) => {
-    const { filename } = req.params;
-    const filePath = path.join(process.cwd(), 'uploads', filename);
-    console.log(filePath);
+    const { filename } = req.params; // Get the image file name
+    const filePath = path.join(process.cwd(), 'uploads', filename); // Concatenate the image file location
     // Check if file exists
     if (!fs.existsSync(filePath)) {
         return res.status(404).json({ message: 'Image not found' });
