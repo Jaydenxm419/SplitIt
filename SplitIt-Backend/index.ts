@@ -28,12 +28,7 @@ app.get('/', (req, res) => {
   res.send('Ooga Booga');
 });
 
-app.use('/api', receiptRoutes);  // Use the upload routes
-
-// app.post('/upload', upload.single('image'), (req, res) => {
-//   console.log(req.file); // should now log file info
-//   res.send({ imageUri: req.file });
-// });
+app.use('/receipts', receiptRoutes);  // Use the upload routes
 
 // Start server
 app.listen(PORT, () => {

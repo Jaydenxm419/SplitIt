@@ -26,7 +26,7 @@ async function sendImageToBackend(imageURI: string): Promise<string> {
     } as any);
 
     // POST the image to the backend at the /upload route
-    const response = await axios.post(`${BASE_URL}/api/upload/receipt`, formData, {
+    const response = await axios.post(`${BASE_URL}/receipts/upload`, formData, {
       headers: {
         'Content-Type': 'multipart/form-data',
       },
@@ -102,14 +102,14 @@ export default function App() {
       </CameraView>
     );
   };
-  console.log(`${BASE_URL}/api/image/${message}`)
+  console.log(`${BASE_URL}/receipts/${message}`)
   
   return (
     <View style={styles.container}>
       {renderCamera()}
       {message && (
       <Image
-      source={{ uri: `${BASE_URL}/api/image/${message}?t=${Date.now()}` }}
+      source={{ uri: `${BASE_URL}/receipts/${message}?t=${Date.now()}` }}
       style={styles.imagePreview}/>
     )}
     </View>
